@@ -1,0 +1,2 @@
+#!/bin/sh
+cat start.asm draw_*.asm end.asm > zad4.asm
