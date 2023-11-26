@@ -1,0 +1,14 @@
+CHIP Log2 {
+
+	IN in[16];
+	OUT out[16];
+
+	PARTS:
+		Clz(in=in, out=zeroes);
+		Not16(in=zeroes, out=temp);
+		Inc16(in=temp, out=negativeZeroes);
+		// ako je in=0, sto je takodjer nevalidan input, vratit cu -1 isto kao
+		// za negativne brojeve, jer zadatak ne specificira sto trebam napraviti
+		Add16(a[0..3]=true, a[4..15]=false, b=negativeZeroes, out=log);
+		Mux16(a=log, b=true, sel=in[15], out=out);
+}

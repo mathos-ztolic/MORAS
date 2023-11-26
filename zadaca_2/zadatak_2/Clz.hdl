@@ -1,0 +1,45 @@
+CHIP Clz {
+
+	IN in[16];
+	OUT out[16];
+
+	PARTS:
+		// tehnicki tocnije: bitNIsOneOrAnyPreceedingBitIsOne, ali to je predugo
+		Mux(a=in[14], b=true, sel=in[15], out=bit2IsOne);
+		Mux(a=in[13], b=true, sel=bit2IsOne, out=bit3IsOne);
+		Mux(a=in[12], b=true, sel=bit3IsOne, out=bit4IsOne);
+		Mux(a=in[11], b=true, sel=bit4IsOne, out=bit5IsOne);
+		Mux(a=in[10], b=true, sel=bit5IsOne, out=bit6IsOne);
+		Mux(a=in[9], b=true, sel=bit6IsOne, out=bit7IsOne);
+		Mux(a=in[8], b=true, sel=bit7IsOne, out=bit8IsOne);
+		Mux(a=in[7], b=true, sel=bit8IsOne, out=bit9IsOne);
+		Mux(a=in[6], b=true, sel=bit9IsOne, out=bit10IsOne);
+		Mux(a=in[5], b=true, sel=bit10IsOne, out=bit11IsOne);
+		Mux(a=in[4], b=true, sel=bit11IsOne, out=bit12IsOne);
+		Mux(a=in[3], b=true, sel=bit12IsOne, out=bit13IsOne);
+		Mux(a=in[2], b=true, sel=bit13IsOne, out=bit14IsOne);
+		Mux(a=in[1], b=true, sel=bit14IsOne, out=bit15IsOne);
+		Mux(a=in[0], b=true, sel=bit15IsOne, out=bit16IsOne);
+		
+		Add16(a=false, b[0]=in[15], out=oneTally1);
+		Add16(a=oneTally1, b[0]=bit2IsOne, out=oneTally2);
+		Add16(a=oneTally2, b[0]=bit3IsOne, out=oneTally3);
+		Add16(a=oneTally3, b[0]=bit4IsOne, out=oneTally4);
+		Add16(a=oneTally4, b[0]=bit5IsOne, out=oneTally5);
+		Add16(a=oneTally5, b[0]=bit6IsOne, out=oneTally6);
+		Add16(a=oneTally6, b[0]=bit7IsOne, out=oneTally7);
+		Add16(a=oneTally7, b[0]=bit8IsOne, out=oneTally8);
+		Add16(a=oneTally8, b[0]=bit9IsOne, out=oneTally9);
+		Add16(a=oneTally9, b[0]=bit10IsOne, out=oneTally10);
+		Add16(a=oneTally10, b[0]=bit11IsOne, out=oneTally11);
+		Add16(a=oneTally11, b[0]=bit12IsOne, out=oneTally12);
+		Add16(a=oneTally12, b[0]=bit13IsOne, out=oneTally13);
+		Add16(a=oneTally13, b[0]=bit14IsOne, out=oneTally14);
+		Add16(a=oneTally14, b[0]=bit15IsOne, out=oneTally15);
+		Add16(a=oneTally15, b[0]=bit16IsOne, out=numberOfOnes);
+
+		Not16(in=numberOfOnes, out=temp);
+		Inc16(in=temp, out=negativeNumberOfOnes);
+
+		Add16(a[0..3]=false, a[4]=true, a[5..15]=false, b=negativeNumberOfOnes, out=out);
+}
