@@ -1,0 +1,5 @@
+#!/bin/sh
+cd data2asm
+./data2asm.py
+cd ..
+cat start.asm data2asm/draw_*.asm end.asm > zad5.asm
