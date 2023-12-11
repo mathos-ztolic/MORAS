@@ -16,8 +16,9 @@ def _parse_symbols(self):
 # izbrisana iz nje. Koristimo dictionary _labels.
 def _parse_labels(self, line, p, o):
     if line[0] == "(":
-        label = line[1:].split(")")[0]
-        if len(label) == 0:
+        split_label = line[1:].split(')')
+        label = split_label[0]
+        if len(split_label) != 2 or split_label[1] != '' or label == '':
             self._flag = False
             self._line = o
             self._errm = "Invalid label"
