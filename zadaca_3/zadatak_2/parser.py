@@ -63,7 +63,7 @@ class SUMMacro(SimpleMacro):
         D = self.arguments[2]
         return f'@{A}\nD=M\n@{B}\nD=D+M\n@{D}\nM=D'
 
-class WHILEMacro(BlockMacro):
+class DOWHILEMacro(BlockMacro):
     
     def open(self, line: str, p: int, o: int) -> str:
         A = self.arguments[0]
@@ -73,6 +73,20 @@ class WHILEMacro(BlockMacro):
         A = self.arguments[0]
         var = f'__while_{A}_{self.open_o}'
         return f'@{A}\nD=M\n@__while_{A}_{self.open_o}\nD;JNE'
+
+class WHILEMacro(BlockMacro):
+    
+    def open(self, line: str, p: int, o: int) -> str:
+        A = self.arguments[0]
+        var = f'__while_{A}_{o}'
+        var_after = f'__while_{A}_{o}_after'
+        return f"@{A}\nD=M\n@{var_after}\nD;JEQ\n({var})"
+
+    def close(self, line: str, p: int, o: int) -> str:
+        A = self.arguments[0]
+        var = f'__while_{A}_{self.open_o}'
+        var_after = f'__while_{A}_{self.open_o}_after'
+        return f'@{A}\nD=M\n@{var}\nD;JNE\n({var_after})'
 
 
 class ParsingError(Exception):
@@ -121,22 +135,21 @@ class Parser:
     
     # korisnicke varijable ne smiju biti prefiksane ni s cim odavde
     RESTRICTIONS = ('__while', '__aux', '__halt')
-    
 
     # ne smiju postojati konstante za zatvaranje blokova koje su ujedno
     # i makroi, to ce se provjeravati tijekom inicjalizacije
     # ovo je komplikacija koja dopusta da razlicite konstante zatvaraju
     # razlicite blokove, npr.
     # FOR(A, B, C) -> DONE umjesto samo hardcodeani FOR(A, B, C) -> END 
-    BLOCK_OPENING_MACROS = {'WHILE': ('END',)}
+    BLOCK_OPENING_MACROS = {'WHILE': ('END',), 'DOWHILE': ('END',)}
     BLOCK_CLOSING_CONSTS: dict[str, tuple[str, ...]]  # __init__
 
-    BLOCK_MACROS = {'WHILE': WHILEMacro}
+    BLOCK_MACROS = {'WHILE': WHILEMacro, 'DOWHILE': DOWHILEMacro}
     SIMPLE_MACROS = {'MV': MVMacro, 'SWP': SWPMacro,
                      'SUM': SUMMacro, 'HALT': HALTMacro,
                      'SET': SETMacro}
     MACRO_ARGCOUNTS = {'MV': 2, 'SWP': 2, 'SUM': 3,
-                       'WHILE': 1, 'HALT': 0, 'SET': 2}
+                       'WHILE': 1, 'DOWHILE': 1, 'HALT': 0, 'SET': 2}
 
     def __init__(
         self, filename: str, output_filename: Optional[str] = None,
