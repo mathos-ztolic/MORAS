@@ -32,7 +32,7 @@ $WHILE(iterations)
 		@dont_swap
 		D;JLE
 
-		$SWPPTR(inner_position,position)
+		$SWP(*inner_position,*position)
 
 		(dont_swap)
 		@inner_idx
