@@ -52,8 +52,16 @@ class SWPMacro(SimpleMacro):
     def run(self, line: str, p: int, o: int) -> str:
         A = self.arguments[0]
         B = self.arguments[1]
-        return (f'@{A}\nD=M\n@__aux\nM=D\n@{B}\nD=M'
-                f'\n@{A}\nM=D\n@__aux\nD=M\n@{B}\nM=D')
+        return (f'@{A}\nD=M\n@__aux\nM=D\n@{B}\nD=M\n'
+                f'@{A}\nM=D\n@__aux\nD=M\n@{B}\nM=D')
+
+class SWPPTRMacro(SimpleMacro):
+
+    def run(self, line: str, p: int, o: int) -> str:
+        A = self.arguments[0]
+        B = self.arguments[1]
+        return (f'@{A}\nA=M\nD=M\n@__aux\nM=D\n@{B}\nA=M\nD=M\n'
+                f'@{A}\nA=M\nM=D\n@__aux\nD=M\n@{B}\nA=M\nM=D')
 
 class SUMMacro(SimpleMacro):
 
@@ -153,10 +161,10 @@ class Parser:
     BLOCK_CLOSING_CONSTS: dict[str, tuple[str, ...]]  # __init__
 
     BLOCK_MACROS = {'WHILE': WHILEMacro, 'DOWHILE': DOWHILEMacro}
-    SIMPLE_MACROS = {'MV': MVMacro, 'SWP': SWPMacro,
+    SIMPLE_MACROS = {'MV': MVMacro, 'SWP': SWPMacro, 'SWPPTR': SWPPTRMacro,
                      'SUM': SUMMacro, 'HALT': HALTMacro,
                      'SET': SETMacro, 'SUB': SUBMacro}
-    MACRO_ARGCOUNTS = {'MV': 2, 'SWP': 2, 'SUM': 3, 'SUB': 3,
+    MACRO_ARGCOUNTS = {'MV': 2, 'SWP': 2, 'SWPPTR': 2, 'SUM': 3, 'SUB': 3,
                        'WHILE': 1, 'DOWHILE': 1, 'HALT': 0, 'SET': 2}
 
     def __init__(
