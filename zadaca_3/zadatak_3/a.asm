@@ -30,6 +30,4 @@ $END
 
 $MV(nextadd,2)
 
-(END)
-@END
-0;JMP
+$HALT()
