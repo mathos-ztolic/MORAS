@@ -112,7 +112,7 @@ class ParsingError(Exception):
         self.lineno = lineno
 
 def sliding_substring(string: str, n: int = 2) -> Generator[str, None, None]:
-    if len(string) <= 2:
+    if len(string) <= n:
         yield string
         return
     for i in range(len(string) - n + 1):
