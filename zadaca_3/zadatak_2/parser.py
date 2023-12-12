@@ -63,6 +63,14 @@ class SUMMacro(SimpleMacro):
         D = self.arguments[2]
         return f'@{A}\nD=M\n@{B}\nD=D+M\n@{D}\nM=D'
 
+class SUBMacro(SimpleMacro):
+
+    def run(self, line: str, p: int, o: int) -> str:
+        A = self.arguments[0]
+        B = self.arguments[1]
+        D = self.arguments[2]
+        return f'@{A}\nD=M\n@{B}\nD=D-M\n@{D}\nM=D'
+
 class DOWHILEMacro(BlockMacro):
     
     def open(self, line: str, p: int, o: int) -> str:
@@ -147,8 +155,8 @@ class Parser:
     BLOCK_MACROS = {'WHILE': WHILEMacro, 'DOWHILE': DOWHILEMacro}
     SIMPLE_MACROS = {'MV': MVMacro, 'SWP': SWPMacro,
                      'SUM': SUMMacro, 'HALT': HALTMacro,
-                     'SET': SETMacro}
-    MACRO_ARGCOUNTS = {'MV': 2, 'SWP': 2, 'SUM': 3,
+                     'SET': SETMacro, 'SUB': SUBMacro}
+    MACRO_ARGCOUNTS = {'MV': 2, 'SWP': 2, 'SUM': 3, 'SUB': 3,
                        'WHILE': 1, 'DOWHILE': 1, 'HALT': 0, 'SET': 2}
 
     def __init__(
