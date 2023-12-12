@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import itertools
 import re
 from sys import argv, stderr
 from typing import Mapping, NamedTuple, Optional, Callable, Generator
@@ -40,7 +41,23 @@ class SETMacro(SimpleMacro):
     def run(self, line: str, p: int, o: int) -> str:
         A = self.arguments[0]
         B = self.arguments[1]
-        return f'@{B}\nD=A\n@{A}\nM=D'
+
+        try:
+            B = int(B)
+        except ValueError:
+            raise ParserError(
+                'MCR',
+                'Nevalidan SET Macro. Drugi argument mora biti broj. '
+                'Mozda ste htjeli MV?',
+                o,
+            )
+
+        if B in (-1, 0, 1):
+            return f'@{A}\nM={B}'
+
+        return (f'@{B}\nD=A\n@{A}\nM=D'
+                if B >= 0 else
+                f'@{~B}\nD=A\nD=!D\n@{A}\nM=D')
 
 class HALTMacro(SimpleMacro):
 
@@ -52,16 +69,16 @@ class SWPMacro(SimpleMacro):
     def run(self, line: str, p: int, o: int) -> str:
         A = self.arguments[0]
         B = self.arguments[1]
-        return (f'@{A}\nD=M\n@__aux\nM=D\n@{B}\nD=M\n'
-                f'@{A}\nM=D\n@__aux\nD=M\n@{B}\nM=D')
-
-class SWPPTRMacro(SimpleMacro):
-
-    def run(self, line: str, p: int, o: int) -> str:
-        A = self.arguments[0]
-        B = self.arguments[1]
-        return (f'@{A}\nA=M\nD=M\n@__aux\nM=D\n@{B}\nA=M\nD=M\n'
-                f'@{A}\nA=M\nM=D\n@__aux\nD=M\n@{B}\nA=M\nM=D')
+        A_ptr_count = len([*itertools.takewhile(lambda c: c == '*', A)])
+        B_ptr_count = len([*itertools.takewhile(lambda c: c == '*', B)])
+        A_real = A[A_ptr_count:]
+        B_real = B[B_ptr_count:]
+        if not A_real or not B_real:
+            raise ParsingError('MCR', "Nevalidan SWP macro.", o)
+        A_str = 'A=M\n'*A_ptr_count
+        B_str = 'A=M\n'*B_ptr_count
+        return (f'@{A_real}\n{A_str}D=M\n@__aux\nM=D\n@{B_real}\n{B_str}D=M\n'
+                f'@{A_real}\n{A_str}M=D\n@__aux\nD=M\n@{B_real}\n{B_str}M=D')
 
 class SUMMacro(SimpleMacro):
 
@@ -161,10 +178,10 @@ class Parser:
     BLOCK_CLOSING_CONSTS: dict[str, tuple[str, ...]]  # __init__
 
     BLOCK_MACROS = {'WHILE': WHILEMacro, 'DOWHILE': DOWHILEMacro}
-    SIMPLE_MACROS = {'MV': MVMacro, 'SWP': SWPMacro, 'SWPPTR': SWPPTRMacro,
+    SIMPLE_MACROS = {'MV': MVMacro, 'SWP': SWPMacro,
                      'SUM': SUMMacro, 'HALT': HALTMacro,
                      'SET': SETMacro, 'SUB': SUBMacro}
-    MACRO_ARGCOUNTS = {'MV': 2, 'SWP': 2, 'SWPPTR': 2, 'SUM': 3, 'SUB': 3,
+    MACRO_ARGCOUNTS = {'MV': 2, 'SWP': 2, 'SUM': 3, 'SUB': 3,
                        'WHILE': 1, 'DOWHILE': 1, 'HALT': 0, 'SET': 2}
 
     def __init__(
