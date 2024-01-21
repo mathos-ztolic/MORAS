@@ -1,0 +1,120 @@
+class vint {
+	field int length, capacity;
+	field Array array;
+
+	method int len() {
+		return capacity;
+	}
+
+	method int numelements() {
+		return length;
+	}
+
+	constructor vint new(int n) {
+		let capacity = 1;
+		if ((n < 0) | (n > 14)) {
+			let array = Array.new(1);
+			let length = 0;
+			return this;
+		}
+		while (~(n = 0)) { let capacity = capacity * 2; let n = n - 1;	}
+		let array = Array.new(capacity);
+		let length = 0;
+		return this;
+	}
+
+	method void set(int k, int v) {
+
+		var boolean changed;
+		var int i;
+		var Array new_array;
+
+		let changed = false;
+		if ((k < 0) | (k > 16383)) {
+			do Output.printString("Nevalidni indeks, mora biti [0,16383].");
+			do Sys.error(1);
+		}
+		while (k > (capacity - 1)) {
+			let capacity = capacity * 2;
+			let changed = true;
+		}
+
+		if (changed) {
+			let new_array = Array.new(capacity);
+			let i = 0;
+			while (i < length) {
+				let new_array[i] = array[i];
+				let i = i + 1;
+			}
+			do array.dispose();
+			let array = new_array;
+		}
+
+		let array[k] = v;
+
+		if ((k + 1) > length) { let length = k + 1; }
+
+		return;
+
+	}
+
+	method int get(int k) {
+		if ((k < 0) | (k > (capacity - 1))) {
+			do Output.printString("Nevalidni indeks, mora biti [0,");
+			do Output.printInt(capacity - 1);
+			do Output.printString("].");
+			do Sys.error(1);
+		}
+		return array[k];
+	}
+
+	method void resize(int m) {
+		var int new_length, new_capacity, new_length;
+		var Array new_array;
+		var int i;
+		let new_capacity = 1;
+		if ((~(m < 0)) & (~(m > 14))) {
+			while (~(m = 0)) { let new_capacity = new_capacity * 2; let m = m - 1; }
+		}
+		let new_array = Array.new(new_capacity);
+		if (length < new_capacity) { let new_length = length; }
+		else { let new_length = new_capacity; }
+		let i = 0;
+		while (i < new_length) { let new_array[i] = array[i]; let i = i + 1; }
+		let length = new_length;
+		let capacity = new_capacity;
+		do array.dispose();
+		let array = new_array;
+		return;
+	}
+
+	function boolean is_eq(vint a, vint b) {
+		var int i;
+		if (~(a.numelements() = b.numelements())) { return false; }
+		let i = 0;
+		while (i < a.numelements()) { if (~(a.get(i) = b.get(i))) { return false; } let i = i + 1; }
+		return true;
+	}
+	
+	function boolean elems(vint a, vint b) {
+		var int i;
+		var Array a_arr, b_arr;
+		if (~(a.numelements() = b.numelements())) { return false; }
+		if (a.numelements() = 0) { return true; }
+
+		let a_arr = Array.new(a.numelements());
+		let b_arr = Array.new(b.numelements());
+		let i = 0;
+		while (i < a.numelements()) { let a_arr[i] = a.get(i); let i = i + 1; }
+		let i = 0;
+		while (i < b.numelements()) { let b_arr[i] = b.get(i); let i = i + 1; }
+		do QuickSort.quicksort(a_arr, 0, a.numelements() - 1);
+		do QuickSort.quicksort(b_arr, 0, b.numelements() - 1);
+		let i = 0;
+		while (i < a.numelements()) { if (~(a_arr[i] = b_arr[i])) { return false; } let i = i + 1; }
+		do a_arr.dispose();
+		do b_arr.dispose();
+		return true;
+	}
+
+}

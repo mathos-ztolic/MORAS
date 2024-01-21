@@ -1,0 +1,90 @@
+class Main {
+
+	function void main() {
+		var boolean loop;
+		var vint arr, arr2;
+		var int length;
+		var int i;
+		var int value;
+		
+		let arr = vint.new(0);
+		let arr2 = vint.new(0);
+
+		do arr.set(0, 5);
+		do arr.set(1, 4);
+		do arr2.set(0, 4);
+		do arr2.set(1, 5);
+
+		do Output.printString("is_eq: ");
+		do Output.printInt(vint.is_eq(arr, arr2));
+		do Output.println();
+		do Output.printString("elems: ");
+		do Output.printInt(vint.elems(arr, arr2));
+		do Output.println();
+
+		do arr.resize(0);
+		do arr2.resize(0);
+
+		let i = 0;
+		let loop = true;
+
+		do Output.printString("Mozete unijeti 0 da prestanete.");
+		do Output.println();
+
+		while (loop) {
+			do Output.printString("Unesite ");
+			do Output.printInt(i+1);
+			let value = Keyboard.readInt(". broj: ");
+			if (value = 0) {
+				let loop = false;
+			}
+			else {
+				do arr.set(i, value);
+				let i = i+1;
+			}
+		}
+		let i = 0;
+		while (i < (arr.numelements() - 1)) {
+			do Output.printInt(arr.get(i));
+			do Output.printString(", ");
+			let i = i + 1;
+		}
+		do Output.printInt(arr.get(i));
+		do Output.println();
+		do Output.println();
+
+		do Output.printString("Before resize.");
+		do Output.println();
+		do Output.printString("Length: ");
+		do Output.printInt(arr.numelements());
+		do Output.println();
+		do Output.printString("Capacity: ");
+		do Output.printInt(arr.len());
+		do Output.println();
+		do Output.println();
+		
+		do arr.resize(8);
+		do Output.printString("After resize.");
+		do Output.println();
+		do Output.printString("Length: ");
+		do Output.printInt(arr.numelements());
+		do Output.println();
+		do Output.printString("Capacity: ");
+		do Output.printInt(arr.len());
+		do Output.println();
+		do Output.println();
+		
+		do arr.resize(2);
+		do Output.printString("After another resize.");
+		do Output.println();
+		do Output.printString("Length: ");
+		do Output.printInt(arr.numelements());
+		do Output.println();
+		do Output.printString("Capacity: ");
+		do Output.printInt(arr.len());
+		
+		return;
+
+	}
+
+}
