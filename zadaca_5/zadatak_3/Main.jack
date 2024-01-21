@@ -1,0 +1,97 @@
+class Main {
+	static int span, scale, arrow_scale, arrow_ratio;
+
+	function int sgn(int x) {
+		if (x > 0) { return 1; }
+		if (x < 0) { return -1; }
+		return 0;
+	}
+
+	function int f(int x) {
+		var int fx;
+		let fx = (-x*x) + 9;
+		return Main.sgn(fx) * fx - 9;
+	}
+	
+	function void drawAxes() {
+		// x
+		do Screen.drawLine(
+			0, scale * span,
+			255, scale * span
+		);
+
+		do Screen.drawLine(
+			2 * scale * span, scale * span,
+			2 * scale * span - (arrow_ratio * arrow_scale), scale * span - arrow_scale
+		);
+		do Screen.drawLine(
+			2 * scale * span, scale * span,
+			2 * scale * span - (arrow_ratio * arrow_scale), scale * span + arrow_scale
+		);
+		
+
+		// y
+		do Screen.drawLine(
+			scale * span, 0,
+			scale * span, 255
+		);
+		
+		do Screen.drawLine(
+			scale * span, 0,
+			scale * span - arrow_scale, arrow_ratio * arrow_scale
+		);
+		do Screen.drawLine(
+			scale * span, 0,
+			scale * span + arrow_scale, arrow_ratio * arrow_scale
+		);
+
+		return;
+	}
+	
+	// 4 * 32 = 128, 2*128 = 256, tocke na rubnim granicama na y=-32 i x=+32
+	// moraju biti pomaknute, ovo izgleda ruzno na rubovima, ali ne znam
+	// kako ovo napraviti na bolji nacin
+	// za primjer ovoga, stavite f(x) = x
+	function int nudge(int x) {
+		if (x = 256) { return 255; }
+		return x;
+	}
+
+	function void plotFunction() {
+		var int px, py, cx, cy, i, fi; // previous, current
+		var boolean has_discontinuity;
+		let has_discontinuity = true;
+		let i = -span;
+		while (i < (span + 1)) {
+			if (has_discontinuity) {
+				let px = Main.nudge((i + span) * scale);
+				let fi = Main.f(i);
+				let py = Main.nudge((span - fi) * scale);
+				if ((~(fi > span)) & ~(fi < -span)) { let has_discontinuity = false; }
+			} else {
+				let cx = Main.nudge((i + span) * scale);
+				let fi = Main.f(i);
+				let cy = Main.nudge((span - fi) * scale);
+				if ((~(fi > span)) & ~(fi < -span)) {
+					do Screen.drawLine(px, py, cx, cy);
+					let px = cx;
+					let py = cy;
+				}
+				else { let has_discontinuity = true; }
+			}
+			let i = i + 1;
+		}
+		return;
+	}
+
+	function void main() {
+		let span = 32;
+		let scale = 4;
+		let arrow_scale = 4;
+		let arrow_ratio = 4;
+		do Main.drawAxes();
+		do Main.plotFunction();
+		return;
+	}
+
+}
