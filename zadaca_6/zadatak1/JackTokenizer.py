@@ -130,12 +130,8 @@ class Tokenizer:
                 if (self._ofile != None):
                         self._ofile.writeXML('source', '/// %d: %s' %(self._lineNum, self._rawline))
 
-                # 1. Uklonimo prvi jednolinijski komentar (npr. find, split).
-                i = self._line.find("//")
-                if i != -1: self._line = self._line[:i]
 
-                # 2. Po potrebi uklanjamo viselinjske komentare kojih moze biti
-                #    proizvoljno mnogo.
+                # 1. Uklanjamo jednolinijske i viselinijske komentare.
                 if self._comment:
                     i = self._line.find("*/")
                     if i == -1:
@@ -145,8 +141,18 @@ class Tokenizer:
                         self._comment = False
 
                 while True:
+                    k = self._line.find("//")
                     i = self._line.find("/*")
-                    if i == -1: break
+                    # no multi-line or single-line openers
+                    if i == -1 and k == -1:
+                        break
+                    # no multi-line, only single-line opener
+                    # or
+                    #   both single-line and mutli-line openers,
+                    #   but the single line one comes before the multi-line one
+                    elif (i == -1) or (i != -1 and k != -1 and k < i):
+                        self._line = self._line[:k]
+                        break
                     j = self._line.find("*/")
                     if j == -1:
                         self._comment = True
@@ -157,9 +163,9 @@ class Tokenizer:
 
                 self._line = self._line.replace('\t', ' ').strip()
 
-                # 4. Ako je nakon uklanjanja komentara linija i dalje neprazna u njoj
+                # 2. Ako je nakon uklanjanja komentara linija i dalje neprazna u njoj
                 #    trazimo token. Parsiranje tokena neka se vrsi u metodi _parseToken.
-                # 5. Ako je nakon uklanjanja komentara linija prazna, ucitavamo novu
+                # 3. Ako je nakon uklanjanja komentara linija prazna, ucitavamo novu
                 #    liniju.
 
                 if len(self._line) == 0: continue
