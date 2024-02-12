@@ -176,6 +176,7 @@ class Compiler:
         ENTRY: Tokenizer positioned on the initial keyword.
         EXIT:  Tokenizer positioned after final ')'.
         """
+        self._writeXMLTag('<parameterList>\n')
         while True:
             if self._tokenizer.tokenType() == TK_SYMBOL and self._tokenizer.symbol() == ")":
                 break
@@ -197,6 +198,7 @@ class Compiler:
             
             self._writeXML("symbol", self._tokenizer.symbol())
             self._nextToken()
+        self._writeXMLTag('</parameterList>\n')
 
     def _compileSubroutineBody(self):
         """
@@ -284,7 +286,22 @@ class Compiler:
         ENTRY: Tokenizer positioned on the first statement.
         EXIT:  Tokenizer positioned after final statement.
         """
-        pass
+        self._writeXMLTag("<statements>\n")
+        kw_table = {
+            KW_LET: self._compileLet,
+            KW_IF: self._compileIf,
+            KW_WHILE: self._compileWhile,
+            KW_DO: self._compileDo,
+            KW_RETURN: self._compileReturn,
+        }
+        while True:
+            try:
+                kw = self._expectKeyword((KW_LET, KW_IF, KW_WHILE, KW_DO, KW_RETURN))
+            except JackError:
+                break
+            kw_table[kw]()
+            
+        self._writeXMLTag("</statements>\n")
 
     def _compileLet(self): # DZ
         """
@@ -294,7 +311,36 @@ class Compiler:
         ENTRY: Tokenizer positioned on the first keyword.
         EXIT:  Tokenizer positioned after final ';'.
         """
-        pass
+        self._writeXMLTag("<letStatement>\n")
+
+        self._writeXML('keyword', self._tokenizer.keywordStr())
+        self._nextToken()
+
+        var_name = self._expectIdentifier()
+        self._writeXML('identifier', var_name)
+        self._nextToken()
+        
+        symbol = self._expectSymbol('[=')
+        if symbol == '[':
+            self._writeXML('symbol', symbol)
+            self._nextToken()
+            self._compileExpression()
+            symbol = self._expectSymbol(']')
+            self._writeXML('symbol', symbol)
+            self._nextToken()
+            symbol = self._expectSymbol('=')
+
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._compileExpression()
+
+        symbol = self._expectSymbol(';')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._writeXMLTag("</letStatement>\n")
+        
 
     def _compileDo(self): # DZ
         """
@@ -309,7 +355,19 @@ class Compiler:
         ENTRY: Tokenizer positioned on the first keyword.
         EXIT:  Tokenizer positioned after final ';'.
         """
-        pass
+        self._writeXMLTag("<doStatement>\n")
+
+        self._writeXML('keyword', self._tokenizer.keywordStr())
+        self._nextToken()
+
+        self._compileCall()
+        
+        symbol = self._expectSymbol(';')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._writeXMLTag("</doStatement>\n")
+        
 
     def _compileCall(self, subroutineName = None):
         """
@@ -341,7 +399,7 @@ class Compiler:
             self._nextToken()
 
             sym = self._expectSymbol('(')
-            self._WriteXML('symbol', self._tokenizer.symbol())
+            self._writeXML('symbol', self._tokenizer.symbol())
             self._nextToken()
 
         self._compileExpressionList()
@@ -358,7 +416,23 @@ class Compiler:
         ENTRY: Tokenizer positioned on the first keyword.
         EXIT:  Tokenizer positioned after final ';'.
         """
-        pass
+        self._writeXMLTag("<returnStatement>\n")
+
+        self._writeXML('keyword', self._tokenizer.keywordStr())
+        self._nextToken()
+        
+        if self._tokenizer.tokenType() == TK_SYMBOL and self._tokenizer.symbol() == ";":
+            self._writeXMLTag("</returnStatement>\n")
+            self._nextToken()
+            return
+
+        self._compileExpression()
+        
+        symbol = self._expectSymbol(';')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._writeXMLTag("</returnStatement>\n")
 
     def _compileIf(self):
         """
@@ -369,7 +443,51 @@ class Compiler:
         ENTRY: Tokenizer positioned on the first keyword.
         EXIT:  Tokenizer positioned after final '}'.
         """
-        pass
+        self._writeXMLTag("<ifStatement>\n")
+
+        self._writeXML('keyword', self._tokenizer.keywordStr())
+        self._nextToken()
+        
+        symbol = self._expectSymbol('(')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._compileExpression()
+        
+        symbol = self._expectSymbol(')')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        symbol = self._expectSymbol('{')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+        
+        self._compileStatements()
+
+        symbol = self._expectSymbol('}')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        try:
+            else_kw = self._expectKeyword(KW_ELSE)
+        except JackError:
+            self._writeXMLTag("</ifStatement>\n")
+            return
+        
+        self._writeXML('keyword', else_kw)
+        self._nextToken()
+        
+        symbol = self._expectSymbol('{')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+        
+        self._compileStatements()
+
+        symbol = self._expectSymbol('}')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._writeXMLTag("</ifStatement>\n")
 
     def _compileWhile(self):
         """
@@ -379,7 +497,32 @@ class Compiler:
         ENTRY: Tokenizer positioned on the first keyword.
         EXIT:  Tokenizer positioned after final '}'.
         """
-        pass
+        self._writeXMLTag("<whileStatement>\n")
+
+        self._writeXML('keyword', self._tokenizer.keywordStr())
+        self._nextToken()
+        
+        symbol = self._expectSymbol('(')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._compileExpression()
+        
+        symbol = self._expectSymbol(')')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        symbol = self._expectSymbol('{')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+        
+        self._compileStatements()
+
+        symbol = self._expectSymbol('}')
+        self._writeXML('symbol', symbol)
+        self._nextToken()
+
+        self._writeXMLTag("</whileStatement>\n")
 
     def _compileExpression(self): # DZ
         """
@@ -390,7 +533,20 @@ class Compiler:
         ENTRY: Tokenizer positioned on the expression.
         EXIT:  Tokenizer positioned after the expression.
         """
-        pass
+        self._writeXMLTag("<expression>\n")
+        
+        self._compileTerm()
+        
+        while True:
+            try:
+                op = self._expectSymbol('+-*/&|<>=')
+            except JackError:
+                break
+            self._writeXML('symbol', op)
+            self._nextToken()
+            self._compileTerm()
+
+        self._writeXMLTag("</expression>\n")
 
     def _compileTerm(self):
         """
@@ -463,7 +619,20 @@ class Compiler:
         ENTRY: Tokenizer positioned on the first expression.
         EXIT:  Tokenizer positioned after the last expression.
         """
-        pass
+        self._writeXMLTag("<expressionList>\n")
+        if self._tokenizer.tokenType() == TK_SYMBOL and self._tokenizer.symbol() == ")":
+            self._writeXMLTag("</expressionList>\n")
+            return
+        
+        self._compileExpression()
+        symbol = self._expectSymbol('),')
+        while symbol == ',':
+            self._writeXML('symbol', symbol)
+            self._nextToken()
+            self._compileExpression()
+            symbol = self._expectSymbol('),')
+
+        self._writeXMLTag("</expressionList>\n")
 
     # Pomocne metode.
 
@@ -539,7 +708,7 @@ class Compiler:
 
 def main():
     C = Compiler()
-    C.read("test")
+    C.read("Square")
 
 if __name__ == '__main__':
     main()
