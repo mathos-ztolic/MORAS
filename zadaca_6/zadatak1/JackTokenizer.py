@@ -225,7 +225,7 @@ class Tokenizer:
                 self._stringVal = self._parseString()
                 return
 
-            raise JackError('Sytax error in line ' + str(self._lineNum) + ': illegal character "' + c + '".')
+            raise JackError('Syntax error in line ' + str(self._lineNum) + ': illegal character "' + c + '".')
 
         self._tokenType = TK_NONE
 
@@ -239,6 +239,8 @@ class Tokenizer:
             else:
                 break
             self._line = self._line[1:]
+        if ret > 32767:
+            raise JackError(f'Syntax error in line {self._lineNum}: integer constant greater than 32767.')
         return ret
 
     # Znamo da je token keyword ili identifier pa ga parsiramo.
